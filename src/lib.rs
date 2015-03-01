@@ -91,7 +91,7 @@ impl Control {
 
   pub fn shutdown_sessions(&mut self, backend: String, server: String) -> Result<String> {
     self.request(&format!("shutdown sessions {}/{}", backend, server))
-}
+  }
 
   pub fn stat(&mut self, proxy: Proxy, statable: Statable, server: Server) -> Result<String> {
     self.request(&format!("show stat {} {} {}", match proxy {

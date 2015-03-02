@@ -37,18 +37,16 @@ pub struct Weight {
 }
 
 impl Weight {
-  fn abs(value: &u32) -> Weight {
-    let normalized = match *value {
-      under if under < 0 => 0,
+  pub fn abs(value: u16) -> Weight {
+    let normalized = match value {
       over if over > 256 => 256,
       ok => ok
     };
     Weight { value: normalized.to_string() }
   }
 
-  fn rel(value: &u32) -> Weight {
-    let normalized = match *value {
-      under if under < 0 => 0,
+  pub fn rel(value: u8) -> Weight {
+    let normalized = match value {
       over if over > 100 => 100,
       ok => ok
     };
@@ -67,8 +65,7 @@ impl Control {
   }
 
   pub fn info(&mut self) -> Result<String> {
-    let mut response = try!(self.request("show info"));
-    Ok(response)
+    self.request("show info")
   }
 
   pub fn sess(&mut self, id: Option<&str>) -> Result<String> {
@@ -97,12 +94,7 @@ impl Control {
     self.request(&format!("show stat {} {} {}", match proxy {
       Proxy::Id(id) => id,
                   _ => "-1".to_string()
-    }, match statable {
-      Statable::Frontends => "1",
-      Statable::Backends  => "2",
-      Statable::Servers   => "4",
-      Statable::Any       => "-1"
-    }, match server {
+    }, statable as i8, match server {
       Server::Id(id) => id,
                    _ => "-1".to_string()
     }))
@@ -162,7 +154,7 @@ impl Control {
     self.request(&format!("set maxconn global {}", max))
   }
 
-  pub fn rateLimitGlobalConnections(&mut self, max: &u32) -> Result<String> {
+  pub fn rate_limit_global_connections(&mut self, max: &u32) -> Result<String> {
     self.request(&format!("set rate-limit connections global {}", max))
   }
 
@@ -178,6 +170,7 @@ impl Control {
                           }, max))
   }
 
+  /// http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#9.2-set%20weight
   pub fn set_weight(&mut self, backend: &str, server: &str, weight: &Weight) -> Result<String> {
     self.request(&format!("set weight {}/{} {}", backend, server, weight.value))
   }
@@ -189,5 +182,41 @@ impl Control {
 }
 
 #[test]
-fn it_works() {
+fn it_caps_abs_over_weights() {
+  assert_eq!(Weight::abs(300).value, "256".to_string())
+}
+
+#[test]
+fn it_caps_abs_under_weights() {
+  // negatives overflow
+  assert_eq!(Weight::abs(-1).value, "256".to_string())
+}
+
+#[test]
+fn it_abs_ok_weights() {
+  assert_eq!(Weight::abs(10).value, "10".to_string())
+}
+
+#[test]
+fn it_caps_rel_over_weights() {
+  assert_eq!(Weight::rel(101).value, "100%".to_string())
+}
+
+#[test]
+fn it_caps_rel_under_weights() {
+  // negatives overflow
+  assert_eq!(Weight::rel(-1).value, "100%".to_string())
+}
+
+#[test]
+fn it_rels_ok_weights() {
+  assert_eq!(Weight::rel(10).value, "10%".to_string())
+}
+
+#[test]
+fn it_represents_statables() {
+  assert_eq!(Statable::Frontends as i8, 1);
+  assert_eq!(Statable::Backends as i8, 2);
+  assert_eq!(Statable::Servers as i8, 4);
+  assert_eq!(Statable::Any as i8, -1);
 }

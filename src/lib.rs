@@ -3,7 +3,9 @@
 
 use std::old_io::IoError;
 use std::old_io::net::pipe::UnixStream;
+use std::collections::HashMap;
 
+// fixme can just be IoError
 pub type Result<T> = std::result::Result<T, IoError>;
 
 pub struct Control {
@@ -37,6 +39,9 @@ pub struct Weight {
 }
 
 impl Weight {
+  /// Weighting value for proxy targets
+  /// indicated as an absoluate value
+  /// from 0 to 256
   pub fn abs(value: u16) -> Weight {
     let normalized = match value {
       over if over > 256 => 256,
@@ -45,6 +50,9 @@ impl Weight {
     Weight { value: normalized.to_string() }
   }
 
+  /// Weighting value for proxy targets
+  /// indicated as relative percent weights
+  /// from 0 to 100
   pub fn rel(value: u8) -> Weight {
     let normalized = match value {
       over if over > 100 => 100,
@@ -54,8 +62,39 @@ impl Weight {
   }
 }
 
+pub struct Stats<'a> {
+  data: &'a HashMap<&'a str, &'a str>
+}
+
+impl<'a> Stats<'a> {
+  pub fn new(data: &'a HashMap<&'a str, &str>) -> Stats<'a> {
+    Stats { data: data }
+  }
+
+  pub fn get(&mut self, key: &str) -> Option<&str> {
+    self.data.get(key).map(|v|*v)
+  }
+
+  pub fn pxname(&mut self) -> &str {
+    self.get("# pxname").unwrap()
+  }
+
+  pub fn svname(&mut self) -> &str {
+    self.get("svname").unwrap()
+  }
+
+  pub fn qcur(&mut self) -> &str {
+    self.get("qcur").unwrap()
+  }
+
+  pub fn qmax(&mut self) -> &str {
+    self.get("qmax").unwrap()
+  }
+}
+
 impl Control {
 
+  /// Creates a new Control given a unix domain socket path
   pub fn new(path: Path) -> Control {
     let transport = match UnixStream::connect(&path) {
       Err(e) => panic!("failed to connect to socket: {:?}", e),
@@ -90,6 +129,7 @@ impl Control {
     self.request(&format!("shutdown sessions {}/{}", backend, server))
   }
 
+  // todo: add structure
   pub fn stat(&mut self, proxy: Proxy, statable: Statable, server: Server) -> Result<String> {
     self.request(&format!("show stat {} {} {}", match proxy {
       Proxy::Id(id) => id,
@@ -176,7 +216,7 @@ impl Control {
   }
 
   fn request(&mut self, cmd: &str) -> Result<String> {
-    try!(self.transport.write_line(&format!("{};", cmd)));
+    try!(self.transport.write_line(cmd));
     self.transport.read_to_string()
   }
 }

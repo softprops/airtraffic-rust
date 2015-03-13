@@ -218,7 +218,7 @@ impl Control {
   }
 
   fn request(&mut self, cmd: &str) -> Result<String> {
-    try!(self.transport.write_all(cmd.as_bytes()));
+    try!(self.transport.write_all(format!("{};", cmd).as_bytes()));
     let mut result = String::new();
     self.transport.read_to_string(&mut result).map(|_| result)
   }

@@ -3,3 +3,12 @@
 name = "airtraffic"
 version = "0.0.1"
 authors = ["softprops <d.tangren@gmail.com>"]
+description = "A friendly rust interface for haproxy"
+documentation = "https://github.com/softprops/airtraffic-rust#readme"
+homepage = "https://github.com/softprops/airtraffic-rust"
+repository = "https://github.com/softprops/airtraffic-rust"
+keywords = ["haproxy", "tools", "proxy"]
+license = "MIT"
+
+[dependencies]
+unix_socket = "0.1.0"

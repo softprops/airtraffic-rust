@@ -1,12 +1,14 @@
-#![feature(old_io)]
+#![feature(io)]
 #![feature(old_path)]
 
-use std::old_io::IoError;
-use std::old_io::net::pipe::UnixStream;
+extern crate unix_socket;
+
+use std::io::{ Error, Read, Write };
+use unix_socket::UnixStream;
 use std::collections::HashMap;
 
 // fixme can just be IoError
-pub type Result<T> = std::result::Result<T, IoError>;
+pub type Result<T> = std::result::Result<T, Error>;
 
 pub struct Control {
   transport: UnixStream
@@ -216,8 +218,9 @@ impl Control {
   }
 
   fn request(&mut self, cmd: &str) -> Result<String> {
-    try!(self.transport.write_line(cmd));
-    self.transport.read_to_string()
+    try!(self.transport.write_all(cmd.as_bytes()));
+    let mut result = String::new();
+    self.transport.read_to_string(&mut result).map(|_| result)
   }
 }
 

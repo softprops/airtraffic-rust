@@ -64,33 +64,217 @@ impl Weight {
   }
 }
 
-pub struct Stats<'a> {
-  data: &'a HashMap<&'a str, &'a str>
+pub struct Stats {
+  data: HashMap<String, String>
 }
 
-impl<'a> Stats<'a> {
-  pub fn new(data: &'a HashMap<&'a str, &str>) -> Stats<'a> {
+impl Stats {
+  pub fn new(data: HashMap<String, String>) -> Stats {
     Stats { data: data }
   }
 
-  pub fn get(&mut self, key: &str) -> Option<&str> {
-    self.data.get(key).map(|v|*v)
+  pub fn get(self, key: &str) -> Option<String> {
+    self.data.get(key).map(|v| (*v).clone())
   }
 
-  pub fn pxname(&mut self) -> &str {
-    self.get("# pxname").unwrap()
+  fn get_str(self, name: &str) -> String {
+    self.get(name).unwrap()
   }
 
-  pub fn svname(&mut self) -> &str {
-    self.get("svname").unwrap()
+  pub fn pxname(self) -> String {
+    self.get_str("# pxname")
   }
 
-  pub fn qcur(&mut self) -> &str {
-    self.get("qcur").unwrap()
+  pub fn svname(self) -> String {
+    self.get_str("svname")
   }
 
-  pub fn qmax(&mut self) -> &str {
-    self.get("qmax").unwrap()
+  pub fn qcur(self) -> String {
+    self.get_str("qcur")
+  }
+
+  pub fn qmax(self) -> String {
+    self.get_str("qmax")
+  }
+
+  pub fn scur(self) -> String {
+    self.get_str("scur")
+  }
+
+  pub fn smax(self) -> String {
+    self.get_str("max")
+  }
+
+  pub fn slim(self) -> String {
+    self.get_str("slim")
+  }
+
+  pub fn slot(self) -> String {
+    self.get_str("slot")
+  }
+
+  pub fn bin(self) -> String {
+    self.get_str("bin")
+  }
+
+  pub fn bout(self) -> String {
+    self.get_str("bout")
+  }
+
+  pub fn dreq(self) -> String {
+    self.get_str("dreq")
+  }
+
+  pub fn ereq(self) -> String {
+    self.get_str("dreq")
+  }
+
+  pub fn econ(self) -> String {
+    self.get_str("econ")
+  }
+
+  pub fn eresp(self) -> String {
+    self.get_str("eresp")
+  }
+
+  pub fn wretr(self) -> String {
+    self.get_str("wretr")
+  }
+
+  pub fn wredis(self) -> String {
+    self.get_str("wredis")
+  }
+
+  pub fn status(self) -> String {
+    self.get_str("status")
+  }
+
+  pub fn weight(self) -> String {
+    self.get_str("weight")
+  }
+
+  pub fn act(self) -> String {
+    self.get_str("act")
+  }
+
+  pub fn bck(self) -> String {
+    self.get_str("bck")
+  }
+
+  pub fn chkfail(self) -> String {
+    self.get_str("chkfail")
+  }
+
+  pub fn chkdown(self) -> String {
+    self.get_str("chkdown")
+  }
+
+  pub fn lastchg(self) -> String {
+    self.get_str("lastchg")
+  }
+
+  pub fn downtime(self) -> String {
+    self.get_str("downtime")
+  }
+
+  pub fn qlimit(self) -> String {
+    self.get_str("qlimit")
+  }
+
+  pub fn pid(self) -> String {
+    self.get_str("pid")
+  }
+
+  pub fn iid(self) -> String {
+    self.get_str("iid")
+  }
+
+  pub fn sid(self) -> String {
+    self.get_str("sid")
+  }
+
+  pub fn throttle(self) -> String {
+    self.get_str("throttle")
+  }
+
+  pub fn lbtot(self) -> String {
+    self.get_str("lbtot")
+  }
+
+  pub fn tracked(self) -> String {
+    self.get_str("tracked")
+  }
+
+  pub fn typ(self) -> String {
+    self.get_str("typ")
+  }
+
+  pub fn rate(self) -> String {
+    self.get_str("rate")
+  }
+
+  pub fn rate_lim(self) -> String {
+    self.get_str("rate_lim")
+  }
+
+  pub fn rate_max(self) -> String {
+    self.get_str("rate_max")
+  }
+
+  pub fn check_status(self) -> String {
+    self.get_str("check_status")
+  }
+
+  pub fn check_duration(self) -> String {
+    self.get_str("check_duration")
+  }
+
+  pub fn hrsp_1xx(self) -> String {
+    self.get_str("hrsp_1xx")
+  }
+
+  pub fn hrsp_2xx(self) -> String {
+    self.get_str("hrsp_2xx")
+  }
+
+  pub fn hrsp_3xx(self) -> String {
+    self.get_str("hrsp_3xx")
+  }
+
+  pub fn hrsp_4xx(self) -> String {
+    self.get_str("hrsp_4xx")
+  }
+
+  pub fn hrsp_5xx(self) -> String {
+    self.get_str("hrsp_5xx")
+  }
+
+  pub fn hrsp_other(self) -> String {
+    self.get_str("hrsp_other")
+  }
+
+  pub fn hanafail(self) -> String {
+    self.get_str("hanafail")
+  }
+
+  pub fn req_rate(self) -> String {
+    self.get_str("req_rate")
+  }
+
+  pub fn req_rate_max(self) -> String {
+    self.get_str("req_rate_max")
+  }
+
+  pub fn req_tot(self) -> String {
+    self.get_str("req_tot")
+  }
+
+  pub fn cli_abrt(self) -> String {
+    self.get_str("cli_abrt")
+  }
+
+  pub fn srv_abrt(self) -> String {
+    self.get_str("srv_abrt")
   }
 }
 
@@ -132,14 +316,31 @@ impl Control {
   }
 
   // todo: add structure
-  pub fn stat(&mut self, proxy: Proxy, statable: Statable, server: Server) -> Result<String> {
-    self.request(&format!("show stat {} {} {}", match proxy {
-      Proxy::Id(id) => id,
-                  _ => "-1".to_string()
-    }, statable as i8, match server {
-      Server::Id(id) => id,
-                   _ => "-1".to_string()
-    }))
+  pub fn stat(
+    &mut self, proxy: Proxy, statable: Statable, server: Server) -> Result<Vec<Stats>> {
+    let s = try!(self.request(
+      &format!("show stat {} {} {}", match proxy {
+          Proxy::Id(id) => id,
+          _ => "-1".to_string()
+      }, statable as i8, match server {
+          Server::Id(id) => id,
+          _ => "-1".to_string()
+      })));
+    let mut lines = s.lines();
+    let names: Vec<String> =
+      lines.next().unwrap().split(',')
+           .map(|s| s.to_string())
+           .collect();
+    //println!("names {:?}", names);
+    let data: Vec<Stats> = lines.map(|line| {
+      let cols = line.split(",");
+      let mut map = HashMap::new();
+      for (ref name, col) in names.iter().zip(cols) {
+        map.insert(name.to_string(), col.to_string());
+      }
+      Stats::new(map)
+    }).collect();
+    Ok(data)
   }
 
   pub fn map(&mut self, name: &str, key: &str, value: &str) -> Result<String> {

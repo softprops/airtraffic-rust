@@ -278,6 +278,58 @@ impl Stats {
   }
 }
 
+
+pub struct Map<'a, 'b> {
+  control: &'a mut Control,
+  name: &'b str
+}
+
+impl<'a, 'b> Map<'a, 'b> {
+
+  pub fn new(control: &'a mut Control, name: &'b str) -> Map<'a, 'b> {
+    Map { control: control, name: name }
+  }
+
+  pub fn map(self, key: &str, value: &str) -> Result<String> {
+    self.control.request(&format!("map {} {} {}", self.name, key, value))
+  }
+
+  pub fn set(self, key: &str, value: &str) -> Result<String> {
+    self.control.request(&format!("map set {} {} {}", self.name, key, value))
+  }
+
+  pub fn clear(self) -> Result<String> {
+    self.control.request(&format!("clear map {}", self.name))
+  }
+}
+
+pub struct FrontEnd<'a, 'b> {
+  control: &'a mut Control,
+  name: &'b str
+}
+
+impl<'a, 'b> FrontEnd<'a, 'b> {
+  pub fn new(control: &'a mut Control, name: &'b str) -> FrontEnd<'a, 'b> {
+    FrontEnd { control: control, name: name }
+  }
+
+  pub fn disable(self) -> Result<String> {
+    self.control.request(&format!("disable frontend {}", self.name))
+  }
+
+  pub fn shutdown(self) -> Result<String> {
+    self.control.request(&format!("shutdown frontend {}", self.name))
+  }
+
+  pub fn enable(self) -> Result<String> {
+    self.control.request(&format!("enable frontend {}", self.name))
+  }
+
+  pub fn max_connections(self, max: &u32) -> Result<String> {
+    self.control.request(&format!("set maxcon frontend {} {}", self.name, max))
+  }
+}
+
 impl Control {
 
   /// Creates a new Control given a unix domain socket path
@@ -287,6 +339,14 @@ impl Control {
       Ok(s)  => s
     };
     Control { transport: transport }
+  }
+
+  pub fn frontend<'a>(&'a mut self, name: &'a str) -> FrontEnd {
+    FrontEnd::new(self, name)
+  }
+
+  pub fn map<'a>(&'a mut self, name: &'a str) -> Map {
+    Map::new(self, name)
   }
 
   pub fn info(&mut self) -> Result<String> {
@@ -343,38 +403,10 @@ impl Control {
     Ok(data)
   }
 
-  pub fn map(&mut self, name: &str, key: &str, value: &str) -> Result<String> {
-    self.request(&format!("map {} {} {}", name, key, value))
-  }
-
-  pub fn map_set(&mut self, name: &str, key: &str, value: &str) -> Result<String> {
-    self.request(&format!("map set {} {} {}", name, key, value))
-  }
-
-  pub fn map_clear(&mut self, name: &str) -> Result<String> {
-    self.request(&format!("clear map {}", name))
-  }
-
   // todo: tables...
 
   pub fn disable_agent(&mut self, backend: &str, server: &str) -> Result<String> {
     self.request(&format!("disable agent {}/{}", backend, server))
-  }
-
-  pub fn disable_frontend(&mut self, name: &str) -> Result<String> {
-    self.request(&format!("disable frontend {}", name))
-  }
-
-  pub fn shutdown_frontend(&mut self, name: &str) -> Result<String> {
-    self.request(&format!("shutdown frontend {}", name))
-  }
-
-  pub fn enable_frontend(&mut self, name: &str) -> Result<String> {
-    self.request(&format!("enable frontend {}", name))
-  }
-
-  pub fn max_frontend_connections(&mut self, name: &str, max: &u32) -> Result<String> {
-    self.request(&format!("set maxcon frontend {} {}", name, max))
   }
 
   pub fn disable_server(&mut self, backend: &str, server: &str) -> Result<String> {

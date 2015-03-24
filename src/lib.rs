@@ -1,9 +1,9 @@
-#![feature(io)]
-#![feature(old_path)]
+#![feature(std_misc)]
 
 extern crate unix_socket;
 
 use std::io::{ Error, Read, Write };
+use std::path::AsPath;
 use unix_socket::UnixStream;
 use std::collections::HashMap;
 
@@ -330,11 +330,43 @@ impl<'a, 'b> FrontEnd<'a, 'b> {
   }
 }
 
+pub struct BackEnd<'a, 'b, 'c> {
+  control: &'a mut Control,
+  name: &'b str,
+  server: &'c str
+}
+
+impl<'a, 'b, 'c> BackEnd<'a, 'b, 'c> {
+  pub fn new(control: &'a mut Control, name: &'b str, server: &'c str) -> BackEnd<'a, 'b, 'c> {
+    BackEnd { control: control, name: name, server: server }
+  }
+
+  pub fn disable_agent(self) -> Result<String> {
+    self.control.request(&format!("disable agent {}/{}", self.name, self.server))
+  }
+
+  pub fn disable_server(self) -> Result<String> {
+    self.control.request(&format!("disable server {}/{}", self.name, self.server))
+  }
+
+  pub fn enable_agent(self) -> Result<String> {
+    self.control.request(&format!("enable agent {}/{}", self.name, self.server))
+  }
+
+  pub fn enable_server(self) -> Result<String> {
+    self.control.request(&format!("enable server {}/{}", self.name, self.server))
+  }
+
+  pub fn weight(self) -> Result<String> {
+    self.control.request(&format!("get weight {}/{}", self.name, self.server))
+  }
+}
+
 impl Control {
 
   /// Creates a new Control given a unix domain socket path
-  pub fn new(path: Path) -> Control {
-    let transport = match UnixStream::connect(&path) {
+  pub fn new<P: AsPath>(path: P) -> Control {
+    let transport = match UnixStream::connect(path) {
       Err(e) => panic!("failed to connect to socket: {:?}", e),
       Ok(s)  => s
     };
@@ -343,6 +375,10 @@ impl Control {
 
   pub fn frontend<'a>(&'a mut self, name: &'a str) -> FrontEnd {
     FrontEnd::new(self, name)
+  }
+
+  pub fn backend<'a>(&'a mut self, name: &'a str, server: &'a str) -> BackEnd {
+    BackEnd::new(self, name, server)
   }
 
   pub fn map<'a>(&'a mut self, name: &'a str) -> Map {
@@ -405,25 +441,6 @@ impl Control {
 
   // todo: tables...
 
-  pub fn disable_agent(&mut self, backend: &str, server: &str) -> Result<String> {
-    self.request(&format!("disable agent {}/{}", backend, server))
-  }
-
-  pub fn disable_server(&mut self, backend: &str, server: &str) -> Result<String> {
-    self.request(&format!("disable server {}/{}", backend, server))
-  }
-
-  pub fn enable_agent(&mut self, backend: &str, server: &str) -> Result<String> {
-    self.request(&format!("enable agent {}/{}", backend, server))
-  }
-
-  pub fn enable_server(&mut self, backend: &str, server: &str) -> Result<String> {
-    self.request(&format!("enable server {}/{}", backend, server))
-  }
-
-  pub fn weight(&mut self, backend: &str, server: &str) -> Result<String> {
-    self.request(&format!("get weight {}/{}", backend, server))
-  }
 
   pub fn max_global_connections(&mut self, max: &u32) -> Result<String> {
     self.request(&format!("set maxconn global {}", max))

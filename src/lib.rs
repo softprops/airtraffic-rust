@@ -365,6 +365,10 @@ impl<'a, 'b, 'c> BackEnd<'a, 'b, 'c> {
   pub fn set_weight(self, weight: &Weight) -> Result<String> {
     self.control.request(&format!("set weight {}/{} {}", self.name, self.server, weight.value))
   }
+
+  pub fn shutdown_sessions(self) -> Result<String> {
+    self.control.request(&format!("shutdown sessions {}/{}", self.name, self.server))
+  }
 }
 
 impl Control {
@@ -410,10 +414,6 @@ impl Control {
 
   pub fn shutdown_session(&mut self, id: &str) -> Result<String> {
     self.request(&format!("shutdown session {}", id))
-  }
-
-  pub fn shutdown_sessions(&mut self, backend: String, server: String) -> Result<String> {
-    self.request(&format!("shutdown sessions {}/{}", backend, server))
   }
 
   // todo: add structure

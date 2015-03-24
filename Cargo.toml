@@ -11,4 +11,4 @@ keywords = ["haproxy", "tools", "proxy"]
 license = "MIT"
 
 [dependencies]
-unix_socket = "0.1.0"
+unix_socket = "0.2.1"

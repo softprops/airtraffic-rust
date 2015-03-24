@@ -360,6 +360,11 @@ impl<'a, 'b, 'c> BackEnd<'a, 'b, 'c> {
   pub fn weight(self) -> Result<String> {
     self.control.request(&format!("get weight {}/{}", self.name, self.server))
   }
+
+  /// http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#9.2-set%20weight
+  pub fn set_weight(self, weight: &Weight) -> Result<String> {
+    self.control.request(&format!("set weight {}/{} {}", self.name, self.server, weight.value))
+  }
 }
 
 impl Control {
@@ -460,11 +465,6 @@ impl Control {
                               true => "ssl_",
                               _ => ""
                           }, max))
-  }
-
-  /// http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#9.2-set%20weight
-  pub fn set_weight(&mut self, backend: &str, server: &str, weight: &Weight) -> Result<String> {
-    self.request(&format!("set weight {}/{} {}", backend, server, weight.value))
   }
 
   fn request(&mut self, cmd: &str) -> Result<String> {

@@ -1,9 +1,10 @@
-#![feature(std_misc)]
+#![feature(convert)]
 
 extern crate unix_socket;
 
+use std::convert::AsRef;
 use std::io::{ Error, Read, Write };
-use std::path::AsPath;
+use std::path::Path;
 use unix_socket::UnixStream;
 use std::collections::HashMap;
 
@@ -374,7 +375,7 @@ impl<'a, 'b, 'c> BackEnd<'a, 'b, 'c> {
 impl Control {
 
   /// Creates a new Control given a unix domain socket path
-  pub fn new<P: AsPath>(path: P) -> Control {
+  pub fn new<P: AsRef<Path>>(path: P) -> Control {
     let transport = match UnixStream::connect(path) {
       Err(e) => panic!("failed to connect to socket: {:?}", e),
       Ok(s)  => s

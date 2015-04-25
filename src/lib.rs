@@ -1,5 +1,3 @@
-#![feature(convert)]
-
 extern crate unix_socket;
 
 use std::convert::AsRef;

@@ -1,13 +1,10 @@
 extern crate unix_socket;
 
 use std::convert::AsRef;
-use std::io::{ Error, Read, Write };
+use std::io::{ Read, Result, Write };
 use std::path::Path;
 use unix_socket::UnixStream;
 use std::collections::HashMap;
-
-// fixme can just be IoError
-pub type Result<T> = std::result::Result<T, Error>;
 
 pub struct Control {
   transport: UnixStream
